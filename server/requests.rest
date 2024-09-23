@@ -1,8 +1,8 @@
-POST http://localhost:9008/signup
+POST http://localhost:9007/signup
 Content-Type: application/json
 
 {
-  "fullname": "tushsagrthj",
-  "email": "tdd2wgguggf@ggomvbgail.com",
-  "password": "Kundaalell1"
+  "fullname":"tunshar110",
+  "email": "tssdsdfdsfr110@gmail.com",
+  "password": "Tushar111"
 }

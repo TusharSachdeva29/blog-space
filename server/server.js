@@ -3,27 +3,23 @@ import mongoose from "mongoose";
 import 'dotenv/config';
 import bcrypt from "bcrypt";
 import { nanoid } from "nanoid";
-
-import jwt from "jsonwebtoken"
-
-// Import the User schema
-import User from "./Schema/User.js";
+import jwt from "jsonwebtoken";
+import cors from 'cors';
+import User from "./Schema/User.js"; // Import the User schema
 
 const server = express();
-const PORT = process.env.PORT || 9008;
-
+server.use(cors());
 server.use(express.json());
 
+const PORT = process.env.PORT || 9007;
 const dburl = process.env.DB_URL;
 
 mongoose.connect(dburl)
     .then(() => console.log("Connected to MongoDB"))
     .catch((err) => console.error("Failed to connect to MongoDB", err));
 
-// Correct the formatDataToSend function to properly access user data
 const formatDatatoSend = (user) => {
-
-    const access_token = jwt.sign({id:user._id},process.env.SECRET_ACCESS_KEY)
+    const access_token = jwt.sign({ id: user._id }, process.env.SECRET_ACCESS_KEY);
     return {
         access_token,
         profile_img: user.personal_info.profile_img,
@@ -34,58 +30,74 @@ const formatDatatoSend = (user) => {
 
 const generateUsername = async (email) => {
     let username = email.split("@")[0];
-    let isUsernamenotUnique = await User.exists({ "personal_info.username": username }).then((result) => result);
-
+    const isUsernamenotUnique = await User.exists({ "personal_info.username": username });
     if (isUsernamenotUnique) {
-        username += nanoid().substring(0, 5); // Add unique string if username is not unique
+        username += nanoid().substring(0, 5);
     }
-
     return username;
 };
 
-server.post("/signup", (req, res) => {
+// Signup route
+server.post("/signup", async (req, res) => {
     const { fullname, email, password } = req.body;
 
     if (!fullname || !email || !password) {
         return res.status(400).json({ message: "Please fill all the fields" });
     }
 
-    const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-    const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/;
+    try {
+        User.findOne({"personal_info.email" : email})
+        .then((user) => {
+            if(user) {
+                return res.status(400).json({ "error": "email already exists" });
+            }
+        })
+    
+        const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+        const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/;
 
-    if (!emailRegex.test(email)) {
-        return res.status(400).json({ error: "Invalid email format" });
-    }
-    if (!passwordRegex.test(password)) {
-        return res.status(400).json({ error: "Invalid password format" });
-    }
-
-    bcrypt.hash(password, 10, async (err, hashed_password) => {
-        if (err) {
-            return res.status(500).json({ error: "Error hashing password" });
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ error: "Invalid email format" });
+        }
+        if (!passwordRegex.test(password)) {
+            return res.status(400).json({ error: "Invalid password format" });
         }
 
-        let username = await generateUsername(email);
+        const hashed_password = await bcrypt.hash(password, 10);
+        const username = await generateUsername(email);
 
-        let user = new User({
+        const newUser = new User({
             personal_info: { fullname, email, password: hashed_password, username }
         });
 
-        user.save()
-            .then((u) => {
-                // Directly return formatted data, not wrapped in a "user" object
-                return res.status(200).json(formatDatatoSend(u));
-            })
-            .catch((err) => {
-                if (err.code === 11000) {
-                    // Handle duplicate email error
-                    return res.status(500).json({ error: "Email already exists" });
-                }
-                return res.status(400).json({ error: err.message });
-            });
+        const savedUser = await newUser.save();
+        return res.status(200).json(formatDatatoSend(savedUser));
 
-        console.log(hashed_password);
-    });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+});
+
+// Signin route
+server.post("/signin", async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        const user = await User.findOne({ "personal_info.email": email });
+        if (!user) {
+            return res.status(400).json({ error: "User not found" });
+        }
+
+        const isPasswordCorrect = await bcrypt.compare(password, user.personal_info.password);
+        if (!isPasswordCorrect) {
+            return res.status(403).json({ error: "Invalid password" });
+        }
+
+        return res.status(200).json(formatDatatoSend(user));
+
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
 });
 
 server.listen(PORT, () => {
