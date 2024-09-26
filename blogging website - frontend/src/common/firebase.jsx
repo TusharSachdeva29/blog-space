@@ -35,6 +35,8 @@ const authWithGoogle = async () => {
     }
     return user;
 }
+
+export{auth,provider}
 // firebase.js
 
 // import { initializeApp } from "firebase/app";
