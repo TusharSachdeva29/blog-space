@@ -4,6 +4,7 @@ import UserAuthForm from "./pages/userAuthForm.page";
 import { useEffect, useState, createContext } from "react";
 import { lookInSession } from "./common/session";
 
+
 export const UserContext = createContext();
 
 const App = () => {

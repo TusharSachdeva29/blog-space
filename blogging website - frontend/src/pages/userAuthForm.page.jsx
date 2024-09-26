@@ -2,11 +2,15 @@ import { Link, Navigate } from "react-router-dom";
 import InputBox from "../components/input.component";
 import googleIcon from "../imgs/google.png";
 import AnimationWrapper from "../common/page-animation";
+import ReactDOM from 'react-dom';
 import { useContext, useRef, useState } from "react";
 import { Toaster, toast } from "react-hot-toast";
 import axios from "axios";
 import { storeInSession } from "../common/session";
 import { UserContext } from "../App";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { getAuth } from 'firebase/auth';
+
 
 const UserAuthForm = ({ type }) => {
     const authForm = useRef();
@@ -67,8 +71,38 @@ const UserAuthForm = ({ type }) => {
         userAuthThroughServer(serverRoute, formData);
     };
 
-    return( access_token ? 
-        <Navigate to="/" /> : 
+    const authWithGoogle = async () => {
+        const auth = getAuth();
+        const provider = new GoogleAuthProvider();
+        try {
+            const result = await signInWithPopup(auth, provider);
+            const credential = GoogleAuthProvider.credentialFromResult(result);
+            const token = credential.accessToken; // Use this if needed
+            const user = result.user;
+            return user;
+        } catch (error) {
+            console.error("Google Authentication failed:", error);
+            throw error;
+        }
+    };
+
+    const handleGoogleAuth = async (e) => {
+        e.preventDefault();
+        e.stopPropagation(); // Prevent form submission
+        try {
+            const user = await authWithGoogle();
+            console.log(user);
+            toast.success("Google login successful!");
+            setUserAuth({ access_token: user.accessToken, ...user });
+        } catch (err) {
+            toast.error("Trouble logging in through Google");
+            console.log(err);
+        }
+    };
+
+    return access_token ? (
+        <Navigate to="/" />
+    ) : (
         <AnimationWrapper keyValue={type}>
             <section className="h-cover flex items-center justify-center">
                 <Toaster />
@@ -88,7 +122,7 @@ const UserAuthForm = ({ type }) => {
 
                     <InputBox 
                         name="email"
-                        type="email" // Changed to email type
+                        type="email"
                         placeholder="Email"
                         icon="fi-rr-envelope"
                     /> 
@@ -109,7 +143,10 @@ const UserAuthForm = ({ type }) => {
                         <hr className="w-1/2 border-black"/>
                     </div>
 
-                    <button className="btn-dark flex items-center justify-center gap-4 w-[90%] center">
+                    <button className="btn-dark flex items-center justify-center gap-4 w-[90%] center" 
+                        onClick={handleGoogleAuth}
+                        disabled={loading}
+                    >
                         <img src={googleIcon} className="w-5" alt="Google Icon"/>
                         Continue with Google
                     </button>

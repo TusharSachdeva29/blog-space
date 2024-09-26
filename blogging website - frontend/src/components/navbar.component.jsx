@@ -7,12 +7,26 @@ import UserNavigationPannel from "./user-navigation.component";
 const NavBar = () => {
   const [searchBoxVisibility, setSearchBoxVisibility] = useState(false);
 
+  const [UserNavPannel , setUserNavPanel] = useState(false);
+
+
   const { userAuth } = useContext(UserContext);
   const { access_token, profile_img } = userAuth;
 
   const toggleSearchBoxVisibility = () => {
     setSearchBoxVisibility((prev) => !prev);
   };
+
+  const handleUserNavPanel = () => {
+    setUserNavPanel(val => !val);
+  }
+
+  const handleBlur = () => {
+    setTimeout(() => {
+        setUserNavPanel(false);
+    },200)//if i dont use timeout and then click on profile onBlur will make me away ratrher than redirecting to profile so by dpoing this i will redirect first to profile than vlurring ..
+    
+  }
 
   return (
     <div>
@@ -64,7 +78,7 @@ const NavBar = () => {
                 <i className="fi fi-rr-bell text-2xl block mt-1"></i>
               </button>
             </Link>
-            <div className="relative">
+            <div className="relative" onClick={handleUserNavPanel} onBlur = {handleBlur}>
               <button className="w-12 h-12 mt-1" aria-label="User Profile">
                 <img
                   src={profile_img || "default-profile.png"}
@@ -72,7 +86,9 @@ const NavBar = () => {
                   alt="User Profile"
                 />
               </button>
-              <UserNavigationPannel />
+              {
+                UserNavPannel ? <UserNavigationPannel /> : ""
+              }
             </div>
           </>
         ) : (
@@ -93,3 +109,27 @@ const NavBar = () => {
 };
 
 export default NavBar;
+
+
+
+// // Import the functions you need from the SDKs you need
+// import { initializeApp } from "firebase/app";
+// import { getAnalytics } from "firebase/analytics";
+// // TODO: Add SDKs for Firebase products that you want to use
+// // https://firebase.google.com/docs/web/setup#available-libraries
+
+// // Your web app's Firebase configuration
+// // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// const firebaseConfig = {
+//   apiKey: "AIzaSyAdcOxtsv15nN-7U_I3RFb4LfqdQ5ysrJw",
+//   authDomain: "mern-blogging-web.firebaseapp.com",
+//   projectId: "mern-blogging-web",
+//   storageBucket: "mern-blogging-web.appspot.com",
+//   messagingSenderId: "447324675377",
+//   appId: "1:447324675377:web:05f0695b7a0dcf4301a410",
+//   measurementId: "G-PH8SHH3EGS"
+// };
+
+// // Initialize Firebase
+// const app = initializeApp(firebaseConfig);
+// const analytics = getAnalytics(app);
