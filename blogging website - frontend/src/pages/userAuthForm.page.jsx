@@ -1,70 +1,74 @@
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import InputBox from "../components/input.component";
 import googleIcon from "../imgs/google.png";
 import AnimationWrapper from "../common/page-animation";
-import { useRef } from "react";
+import { useContext, useRef, useState } from "react";
 import { Toaster, toast } from "react-hot-toast";
 import axios from "axios";
+import { storeInSession } from "../common/session";
+import { UserContext } from "../App";
 
 const UserAuthForm = ({ type }) => {
     const authForm = useRef();
+    const { userAuth, setUserAuth } = useContext(UserContext);
+    const { access_token } = userAuth;
+    const [loading, setLoading] = useState(false);
 
     const userAuthThroughServer = async (serverRoute, formData) => {
-        console.log(import.meta.env);
-
+        setLoading(true);
         try {
             const { data } = await axios.post(import.meta.env.VITE_SERVER_DOMAIN + serverRoute, formData);
-            console.log(data);
+            storeInSession("user", JSON.stringify(data));
+            setUserAuth(data);
             toast.success("Authenticated successfully!");
         } catch (error) {
-            if (error.response && error.response.data) {
-                toast.error(error.response.data.error);
-            } else {
-                toast.error("An error occurred while trying to authenticate.");
-                console.error("Error:", error);
-            }
+            toast.error(error.response?.data?.error || "An error occurred while trying to authenticate.");
+            console.error("Error:", error);
+        } finally {
+            setLoading(false);
         }
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-    
+
         let serverRoute = type === "sign-in" ? "/signin" : "/signup";
-        console.log("Server Route:", serverRoute); // Log server route
-    
         const form = new FormData(authForm.current);
         let formData = {};
-    
+
         for (let [key, value] of form.entries()) {
             formData[key] = value;
         }
-    
+
         let { fullname, email, password } = formData;
-    
+
         if (type !== "sign-in" && !fullname) {
-            return toast.error("Please enter your full name");
+            toast.error("Please enter your full name");
+            return;
         }
-    
+
         if (!email || !password) {
-            return toast.error("Please fill all the fields");
+            toast.error("Please fill all the fields");
+            return;
         }
-    
+
         const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
         const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/;
-    
+
         if (!emailRegex.test(email)) {
-            return toast.error("Invalid email format");
+            toast.error("Invalid email format");
+            return;
         }
         if (!passwordRegex.test(password)) {
-            return toast.error(
-                "Password must be 6-20 characters, include at least one number, one uppercase, and one lowercase letter."
-            );
+            toast.error("Password must be 6-20 characters, include at least one number, one uppercase, and one lowercase letter.");
+            return;
         }
-    
+
         userAuthThroughServer(serverRoute, formData);
     };
 
-    return (
+    return( access_token ? 
+        <Navigate to="/" /> : 
         <AnimationWrapper keyValue={type}>
             <section className="h-cover flex items-center justify-center">
                 <Toaster />
@@ -84,7 +88,7 @@ const UserAuthForm = ({ type }) => {
 
                     <InputBox 
                         name="email"
-                        type="text"
+                        type="email" // Changed to email type
                         placeholder="Email"
                         icon="fi-rr-envelope"
                     /> 
@@ -95,8 +99,8 @@ const UserAuthForm = ({ type }) => {
                         icon="fi-rr-key"
                     /> 
 
-                    <button className="btn-dark center mt-14" type="submit">
-                        {type === "sign-in" ? "Sign In" : "Sign Up"}
+                    <button className="btn-dark center mt-14" type="submit" disabled={loading}>
+                        {loading ? "Loading..." : (type === "sign-in" ? "Sign In" : "Sign Up")}
                     </button>
 
                     <div className="relative w-full flex items-center gap-2 my-10 opacity-10 uppercase text-black font-bold">

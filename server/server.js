@@ -7,6 +7,7 @@ import jwt from "jsonwebtoken";
 import cors from 'cors';
 import User from "./Schema/User.js"; // Import the User schema
 
+
 const server = express();
 server.use(cors());
 server.use(express.json());
@@ -46,13 +47,11 @@ server.post("/signup", async (req, res) => {
     }
 
     try {
-        User.findOne({"personal_info.email" : email})
-        .then((user) => {
-            if(user) {
-                return res.status(400).json({ "error": "email already exists" });
-            }
-        })
-    
+        const user = await User.findOne({ "personal_info.email": email });
+        if (user) {
+            return res.status(400).json({ "error": "email already exists" });
+        }
+
         const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
         const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/;
 
@@ -72,9 +71,9 @@ server.post("/signup", async (req, res) => {
 
         const savedUser = await newUser.save();
         return res.status(200).json(formatDatatoSend(savedUser));
-
-    } catch (error) {
-        return res.status(500).json({ error: error.message });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ "error": "Internal Server Error" });
     }
 });
 
@@ -82,22 +81,30 @@ server.post("/signup", async (req, res) => {
 server.post("/signin", async (req, res) => {
     const { email, password } = req.body;
 
-    try {
-        const user = await User.findOne({ "personal_info.email": email });
-        if (!user) {
-            return res.status(400).json({ error: "User not found" });
+    User.findOne({"personal_info.email": email})
+    .then((user)=>{
+       if(!user){
+        return res.status(400).json({ "error": "Invalid email or password" });
+       }
+
+       bcrypt.compare(password, user.personal_info.password, (err, result) => {
+        if(err){
+            return res.status(402).json({ "error": "erro r occ while login try agauin" });
         }
-
-        const isPasswordCorrect = await bcrypt.compare(password, user.personal_info.password);
-        if (!isPasswordCorrect) {
-            return res.status(403).json({ error: "Invalid password" });
+        if(!result){
+            return res.status(403).json({"error" : "incorrect passwrod"})
         }
+        else{
+            return res.status(200).json(formatDatatoSend(user))
+        }
+       })
 
-        return res.status(200).json(formatDatatoSend(user));
+    }) 
+    .catch(err =>{
+        console.log(err.message);
+        return res.status(500).json({"error":err.message})
+    })
 
-    } catch (error) {
-        return res.status(500).json({ error: error.message });
-    }
 });
 
 server.listen(PORT, () => {
