@@ -8,8 +8,9 @@ import { Toaster, toast } from "react-hot-toast";
 import axios from "axios";
 import { storeInSession } from "../common/session";
 import { UserContext } from "../App";
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { getAuth } from 'firebase/auth';
+
+import { authWithGoogle } from "../common/firebase";
+
 
 
 const UserAuthForm = ({ type }) => {
@@ -71,21 +72,6 @@ const UserAuthForm = ({ type }) => {
         userAuthThroughServer(serverRoute, formData);
     };
 
-    const authWithGoogle = async () => {
-        const auth = getAuth();
-        const provider = new GoogleAuthProvider();
-        try {
-            const result = await signInWithPopup(auth, provider);
-            const credential = GoogleAuthProvider.credentialFromResult(result);
-            const token = credential.accessToken; // Use this if needed
-            const user = result.user;
-            return user;
-        } catch (error) {
-            console.error("Google Authentication failed:", error);
-            throw error;
-        }
-    };
-
     const handleGoogleAuth = async (e) => {
         e.preventDefault();
         e.stopPropagation(); // Prevent form submission
@@ -96,7 +82,7 @@ const UserAuthForm = ({ type }) => {
             setUserAuth({ access_token: user.accessToken, ...user });
         } catch (err) {
             toast.error("Trouble logging in through Google");
-            console.log(err);
+            return console.log(err);
         }
     };
 
