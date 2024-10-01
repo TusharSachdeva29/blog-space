@@ -107,6 +107,10 @@ const arrayMatcher = db({ a: [1, 3] }).get();
 const multiMatcher = db({ a: 1 }, { b: 'hello' }).get();
 // Get array of items where `b` is undefined
 const undefinedMatcher = db({ b: { isUndefined: true } }).get();
+// Get array of items where `b` starts with `he`
+const leftMatcher = db({ b: { left: 'he' } }).get();
+// Get array of items where `b` ends with `lo`
+const rightMatcher = db({ b: { right: 'lo' } }).get();
 ```
 
 ### Get items with a custom query function
@@ -139,6 +143,8 @@ db({ b: 'hello' }).each((item) => console.log(`'a' property: ${item.a}`));
 db({ a: 7 }).remove(); // returns `1` (the number of items removed)
 // Remove items where `b` is undefined
 db({ b: { isUndefined: true } }).remove(); // returns `1`
+// Remove items where `b` is defined
+db({ b: { isUndefined: false } }).remove(); // returns `1`
 // Remove all items
 db().remove();
 ```

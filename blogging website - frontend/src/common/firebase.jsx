@@ -28,7 +28,7 @@ const provider = new GoogleAuthProvider();
 const auth = getAuth();
 
 export const authWithGoogle = async () => {
-    let uer = null;
+    let user = null;
     await signInWithPopup(auth,provider)
     .then((result) => {
         user = result.user

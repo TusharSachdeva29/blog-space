@@ -3,6 +3,6 @@ Content-Type: application/json
 
 {
   
-  "email": "tushar55@gmail.com",
-  "password": "Tushar1@@"
+  "email": "tushar.sachdeva2.ug23@nsut.ac.in",
+  "password": "Tushar2@@"
 }
