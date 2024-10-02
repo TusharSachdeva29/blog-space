@@ -7,15 +7,17 @@ import { GoogleAuthProvider, signInWithPopup,getAuth } from "firebase/auth";
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Firebase configuration using environment variables
 const firebaseConfig = {
-  apiKey: "AIzaSyAdcOxtsv15nN-7U_I3RFb4LfqdQ5ysrJw",
-  authDomain: "mern-blogging-web.firebaseapp.com",
-  projectId: "mern-blogging-web",
-  storageBucket: "mern-blogging-web.appspot.com",
-  messagingSenderId: "447324675377",
-  appId: "1:447324675377:web:05f0695b7a0dcf4301a410",
-  measurementId: "G-PH8SHH3EGS"
-};
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID,
+    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
+  };
+  
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
