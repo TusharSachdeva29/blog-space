@@ -28,11 +28,6 @@ server.use('/google-auth', authLimiter);
 server.use(cors());
 server.use(express.json());
 
-// server.use(cors({
-//     origin: 'http://localhost:5173',  // Allow requests from this origin
-//     methods: 'GET,POST',              // Allow only specific HTTP methods
-//     credentials: true                 // Enable if you need to send cookies
-//   }));
 
 const PORT = process.env.PORT || 9007;
 const dburl = process.env.DB_URL;
