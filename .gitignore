@@ -1,1 +1,5 @@
 .env
+.env
+# Ignore Firebase service account key
+# Ignore Firebase service account key
+mern-blogging-web-firebase-adminsdk-6n04c-fbb88be2fa.json
