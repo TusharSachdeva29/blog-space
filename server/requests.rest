@@ -1,8 +1,18 @@
-POST http://localhost:9007/signin
+POST http://localhost:9007/create-blog
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3MGQyNjM5NjQzNTVkZGE3YjBlMjcwYiIsImlhdCI6MTcyODkxNTAwMSwiZXhwIjoxNzI4OTE4NjAxfQ.XihYjxK0rHICxiV-_xD-nmEYdX87QSjFbUiHTaizv40
 
 {
-  
-  "email": "tushar.sachdeva2.ug23@nsut.ac.in",
-  "password": "Tushar2@@"
+    "title" : "test tittle",
+    "des" : " this is a short des",
+    "content":{
+        "blocks":[1,2]
+    },
+    "tags" : ["tag1", "tag2"]
 }
+
+# {
+#     "fullname":"tusharrr",
+#     "email":"tushjarrr@gmail.com",
+#     "password":"Tusharrr2@@"
+# }

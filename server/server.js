@@ -6,6 +6,7 @@ import { nanoid } from "nanoid";
 import jwt from "jsonwebtoken";
 import cors from 'cors';
 import User from "./Schema/User.js"; // Import the User schema
+import Blog from "./Schema/Blog.js";
 import admin from "firebase-admin";
 import serviceAccountKey from "./mern-blogging-web-firebase-adminsdk-6n04c-fbb88be2fa.json" assert {type: "json"};
 import { getAuth } from "firebase-admin/auth";
@@ -51,6 +52,26 @@ mongoose.connect(dburl)
         console.error("Failed to connect to MongoDB", err);
         process.exit(1);
     });
+
+
+    const verifyJWT = (req, res, next) => {
+        const authHeader = req.header('authorization');
+        const token = authHeader && authHeader.split(" ")[1];
+    
+        if (!token) {
+            return res.status(401).json({ error: "No access token, please sign up first" });
+        }
+    
+        jwt.verify(token, process.env.SECRET_ACCESS_KEY, (err, user) => {
+            if (err) {
+                return res.status(403).json({ error: "Access token is invalid" }); // Corrected this part
+            }
+            req.user = user.id; // Assuming user object has an 'id' field
+            next();
+        });
+    };
+    
+
 
 const formatDatatoSend = (user) => {
     const access_token = jwt.sign(
@@ -181,6 +202,57 @@ server.post("/google-auth", async (req, res) => {
         });
     }
 });
+
+
+
+server.post('/create-blog', verifyJWT ,(req,res) => {
+    let { title,des,banner,tags,content,draft } = req.body
+    let authorId = req.user;
+
+    if(!title.length){
+        return res.status(403).json({error:"tou must provide a title"})
+    }      
+
+    if(!draft){
+    
+        if(!title.length){
+            return res.status(403).json({error:"tou must provide a title"})
+        }        
+        if(!des.length || des.length>200){
+                return res.status(403).json({"error":"description must be between 1 and 200"})
+        }
+    }
+
+    
+    // converting tags to lower case tech,Tech shoulf be treated same 
+    tags = tags.map(tag=> tag.toLowerCase());
+
+    let blog_id = title.replace(/[^a-zA-Z0-9]/g,' ').replace(/\s+/g,"-").trim() + nanoid();
+    // special chara in title will be reapladced by ' ' nd replace it with -
+    console.log(blog_id)
+
+    let blog = new Blog({
+        title,des,banner,content,tags,author:authorId,blog_id,draft: Boolean(draft) 
+    })
+
+    blog.save().then(blog => {
+        let incrementVal = draft ? 0 : 1;
+        
+        User.findOneAndUpdate({ _id : authorId } , { $inc : {"account_info.total_posts": incrementVal} , $push : { "blogs" : blog._id } })
+        .then(user => {
+            return res.status(200).json({id : blog.blog_id })
+        })
+        .catch(err => {
+            return res.status(500).json({"error": "faied to update total post number"})
+        })
+    })
+    .catch(err => {
+        return res.status(500).json({"error":err.message})
+    })
+
+    // return res.json({status:"done"})
+
+})
 
 server.listen(PORT, () => {
     console.log(`Listening on port ${PORT}`);
