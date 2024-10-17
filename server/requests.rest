@@ -1,8 +1,6 @@
 POST http://localhost:9007/search-blogs
-
 Content-Type: application/json
 
-
 {
-    "tag" : "cooking"
+    "tag": "cooking"
 }

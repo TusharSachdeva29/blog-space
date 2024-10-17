@@ -114,7 +114,7 @@ server.get('/latest-blogs', (req, res) => {
 
 
 server.get('/trending-blogs',(req,res) => {
-    console.log("Request Body:", req.body);
+    // console.log("Request Body:", req.body);
     Blog.find({draft:false})
     .populate("author", "personal_info.profile_img personal_info.username personal_info.fullname -_id")
     .sort({"activity.total_reads":-1,"activity.total_likes":-1,"publishedAt":-1})
@@ -128,27 +128,26 @@ server.get('/trending-blogs',(req,res) => {
     })
 })
 
-server.post('/search-blogs', (req,res) => {
-    console.log("Request Body:", req.body);
-    let { tag } = req.body
-
-
-    // tag = tag.toLowerCase();
-
-    let findQuery = {tags:tag,draft:false}
+server.post('/search-blogs', (req, res) => {
+    let {tag} = req.body; 
+    tag = tag.toLowerCase();
+    let findQuery = { tags: tag, draft: false };
     let maxLimit = 5;
+
     Blog.find(findQuery)
-    .populate("author", "personal_info.profile_img personal_info.username personal_info.fullname - _id")
-    .sort({"publishedAt":-1})
-    .select("blog_id title des activity tags publishedAt -_id")
-    .limit(maxLimit)
-    .then(blogs => {
-        return res.status(200).json({ blogs });
-    })
-    .catch(err => {
-        return res.status(500).json({error:err.message});
-    })
-})
+        .populate("author", "personal_info.profile_img personal_info.username personal_info.fullname -_id")  // Populating author details
+        .sort({ "publishedAt": -1 })  // Sorting by the published date, most recent first
+        .select("blog_id title des activity tags publishedAt -_id")  // Selecting specific fields to return
+        .limit(maxLimit)
+        .then(blogs => {
+            console.log(blogs);  // Log the found blogs
+            return res.status(200).json({ blogs });
+        })
+        .catch(err => {
+            return res.status(500).json({ error: err.message });
+        });
+});
+
 
 
 // Signup route
