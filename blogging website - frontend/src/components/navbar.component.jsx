@@ -1,5 +1,5 @@
 import logo from "../imgs/logo.png";
-import { Link, Outlet } from "react-router-dom";
+import { Link, Navigate, Outlet, useNavigate } from "react-router-dom";
 import { useContext, useState } from "react";
 import { UserContext } from "../App";
 import UserNavigationPannel from "./user-navigation.component";
@@ -21,11 +21,21 @@ const NavBar = () => {
     setUserNavPanel(val => !val);
   }
 
+  let navigate = useNavigate()
+
   const handleBlur = () => {
     setTimeout(() => {
         setUserNavPanel(false);
     },200)//if i dont use timeout and then click on profile onBlur will make me away ratrher than redirecting to profile so by dpoing this i will redirect first to profile than vlurring ..
     
+  }
+
+  const handleSearch = (e) => {
+    let query = e.target.value;
+    console.log(e)
+    if(e.keyCode == 13 && query.length){
+      navigate(`/search/${query}`)
+    }
   }
 
   return (
@@ -56,6 +66,7 @@ const NavBar = () => {
               type="text"
               placeholder="Search"
               className="w-full bg-grey p-4 pl-10 pr-10 rounded-full placeholder:text-dark-grey md:pl-12"
+              onKeyDown={handleSearch}
             />
             <i className="fi fi-rr-search absolute right-4 top-1/2 transform -translate-y-1/2 text-dark-grey text-2xl"></i>
           </div>

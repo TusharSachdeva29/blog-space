@@ -129,7 +129,12 @@ server.post("/all-latest-blog-count", (req, res) => {
 
 server.post("/search-blogs-count",(req,res) => {
     let { tag } = req.body;
-    let findQuery = {tags:tag,draft:false}
+    let findQuery 
+    if(tag){
+        findQuery = { tags: tag, draft: false };
+    }else {
+        findQuery = {draft: false , title: new RegExp(query,'i')}
+    }
     Blog.countDocuments(findQuery)
     .then(count => {
         return res.status(200).json({totalDocs: count})
@@ -142,7 +147,7 @@ server.post("/search-blogs-count",(req,res) => {
   
 
 server.get('/trending-blogs',(req,res) => {
-    // console.log("Request Body:", req.body);
+    // console.log("Request Body:", req.b`````ody);
     Blog.find({draft:false})
     .populate("author", "personal_info.profile_img personal_info.username personal_info.fullname -_id")
     .sort({"activity.total_reads":-1,"activity.total_likes":-1,"publishedAt":-1})
@@ -157,9 +162,15 @@ server.get('/trending-blogs',(req,res) => {
 })
 
 server.post('/search-blogs', (req, res) => {
-    let {tag, page} = req.body; 
-    tag = tag.toLowerCase();
-    let findQuery = { tags: tag, draft: false };
+    let {tag,query,page} = req.body; 
+
+    let findQuery 
+    if(tag){
+        findQuery = { tags: tag, draft: false };
+    }else {
+        findQuery = {draft: false , title: new RegExp(query,'i')}
+    }
+
     let maxLimit = 2;
 
     Blog.find(findQuery)
