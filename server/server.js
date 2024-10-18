@@ -128,7 +128,7 @@ server.post("/all-latest-blog-count", (req, res) => {
   });
 
 server.post("/search-blogs-count",(req,res) => {
-    let { tag } = req.body;
+    let { tag,query } = req.body;
     let findQuery 
     if(tag){
         findQuery = { tags: tag, draft: false };
@@ -144,6 +144,30 @@ server.post("/search-blogs-count",(req,res) => {
         return res.status(500).json({ error: err.message })
     })
 })
+
+server.post("/search-users", (req, res) => {
+    console.log("Request body: ", req.body);
+
+    let { query } = req.body;
+
+    // Check if query exists and is not an empty string
+    if (!query || typeof query !== 'string' || query.trim() === '') {
+        return res.status(400).json({ error: "Invalid query" });
+    }
+
+    // Perform search with a case-insensitive regular expression
+    User.find({ "personal_info.username": new RegExp(query, 'i') })
+        .limit(50)
+        // Fixed the exclusion of _id field
+        .select("personal_info.fullname personal_info.username personal_info.profile_img -_id")
+        .then(users => {
+            return res.status(200).json({ users });
+        })
+        .catch(err => {
+            return res.status(500).json({ error: err.message });
+        });
+});
+
   
 
 server.get('/trending-blogs',(req,res) => {

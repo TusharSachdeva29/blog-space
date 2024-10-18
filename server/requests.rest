@@ -1,6 +1,6 @@
-POST http://localhost:9007/search-blogs
+POST http://localhost:9007/search-users
 Content-Type: application/json
 
 {
-    "tag": "cooking"
+    "query": "tush"
 }
