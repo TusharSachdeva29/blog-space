@@ -1,6 +1,14 @@
-POST http://localhost:9007/search-users
+# POST http://localhost:9007/get-blog
+# Content-Type: application/json
+
+# {
+#     "blog_id" : "travelC72I_7RegOTzUyxIgTSso"
+# }
+
+POST http://localhost:9007/get-profile
 Content-Type: application/json
 
 {
-    "query": "tush"
+    "username" : "tushar.sachdeva.ug23"
 }
+ 
