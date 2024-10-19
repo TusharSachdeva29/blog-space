@@ -10,15 +10,12 @@ export const blogStructure = {
     title: '',
     des : '',
     content:[],
-    tags : [],
     author: {personal_info: {}},
     // banner:'',
     publishedAt:''
 }
 
-export const BlogContext = createContext({
-
-})
+export const BlogContext = createContext({})
 
 
 const BlogPage = () => {
@@ -26,12 +23,12 @@ const BlogPage = () => {
     let { blog_id } = useParams()
 
     const [ blog , setBlog] = useState(blogStructure)
-
+    const [ similarBlogs, setSimilarBlogs ] = useState(null)
     const [loading , setLoading ] = useState(true)
 
     
 
- let { title, content, author: { personal_info: { fullname, username : author_username, profile_img } = {} } = {}, publishedAt } = blog;
+    let { title, content, author: { personal_info: { fullname, username : author_username, profile_img } = {} } = {}, publishedAt } = blog;
 
 
 
@@ -40,6 +37,13 @@ const BlogPage = () => {
     const fetchBlog = () => {
         axios.post(import.meta.env.VITE_SERVER_DOMAIN+"/get-blog",{blog_id})
         .then(({data : {blog}}) => {
+
+            axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/search-blogs",{limit:6 , eliminate_blog : blog_id  })
+            .then(({data})=> {
+                setSimilarBlogs(data.blogs)
+                console.log(data.blogs)
+            })
+
             setBlog(blog)
             setLoading(false)
             console.log(blog)
@@ -84,9 +88,13 @@ const BlogPage = () => {
                             </div>
                         </div>
 
-                        <BlogInteraction>
+                        <BlogInteraction />
 
-                        </BlogInteraction>
+                        {/* blog content will go over here wait */}
+
+                        <BlogInteraction />
+
+                        
 
                     </div>
                 </BlogContext.Provider>
