@@ -12,15 +12,18 @@
 // };
 
 
-const Quote = ({quote, caption}) => {
+const Quote = ({ quote, caption }) => {
     return (
         <div className="bg-purple/10 p-3 pl-5 border-l-4 border-purple ">
-            <p className="text-xl leading-10 md:text-2xl">{quote}</p>
-            {caption.length ? <p className="w-full text-purple text-base">{caption}</p> : ""   
-            }
+            {/* Render the quote with dangerouslySetInnerHTML */}
+            <p className="text-xl leading-10 md:text-2xl" dangerouslySetInnerHTML={{ __html: quote }}></p>
+            {caption.length > 0 && (
+                <p className="w-full text-purple text-base">{caption}</p>
+            )}
         </div>
     );
 };
+
 
 const List = ({style,items}) => {
     return (
@@ -34,6 +37,17 @@ const List = ({style,items}) => {
         </ol>
     )
 }
+
+const CodeBlock = ({ code, language }) => {
+    return (
+        <pre className="bg-grey-900 text-green-500 p-4 rounded-md overflow-x-auto">
+            <code className={`language-${language}`}>
+                {code}
+            </code>
+        </pre>
+    );
+};
+
 
 
 const BlogContent = ({block}) => {
@@ -53,18 +67,17 @@ const BlogContent = ({block}) => {
     //     return <Img url={data.file.url} caption={data.caption}/>
     // }
         
-    if(type=="quote"){
-    
-        return <Quote 
-        dangerouslySetInnerHTML={{__html : data.text}}
- 
-        caption={data.caption}>
-
-        </Quote>
+    if (type == "quote") {
+        return <Quote quote={data.text} caption={data.caption} />;
     }
+    
 
     if(type=="list"){
         return <List style={data.style} items = {data.items} />
+    }
+
+    if (type == "code") {
+        return <CodeBlock code={data.code} language={data.language || "plaintext"} />;
     }
 
 

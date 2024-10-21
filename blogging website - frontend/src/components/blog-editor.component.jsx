@@ -27,7 +27,7 @@ const BlogEditor = () => {
     useEffect(() => {
 
         // let editorl = new EditorJs({
-        //     holder: 'textEditor',
+        //     holderId: 'textEditor',
         //     data: '',
         //     placeholder: "lets wrtie an awersome story"
         // })
@@ -35,7 +35,7 @@ const BlogEditor = () => {
         if (!textEditor.isReady) {
             setTextEditor(new EditorJs({
                 holder: "textEditor",
-                data: content,  
+                data: Array.isArray(content) ? content[0] : content,  
                 tools: tools,
                 placeholder: "Let's write an awesome story"
             }));
