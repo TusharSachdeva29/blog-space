@@ -1,7 +1,9 @@
 // Importing tools
+// import EditorJs from "@editorjs/editorjs";
+ 
 import Embed from "@editorjs/embed";
 import List from "@editorjs/list";
-import Image from "@editorjs/image"; // Corrected import for Image tool
+// import Image from "@editorjs/image"; // Corrected import for Image tool
 import Link from "@editorjs/link";
 import Code from "@editorjs/code";
 import Header from "@editorjs/header";
@@ -55,13 +57,13 @@ export const tools = {
             defaultLevel: 2 // Fixed typo here
         }
     },
-    image: {
-        class: Image,
-        // config: {
-        //     uploadByUrl: uploadImageByUrl,
-        //     // uploadByFile: yourFileUploadFunction, // Optional, if you want to handle file uploads
-        // }
-    },
+    // image: {
+    //     class: Image,
+    //     // config: {
+    //     //     uploadByUrl: uploadImageByUrl,
+    //     //     // uploadByFile: yourFileUploadFunction, // Optional, if you want to handle file uploads
+    //     // }
+    // },
     quote: {
         class: Quote,
         inlineToolbar: true

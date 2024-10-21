@@ -14,7 +14,7 @@ const PublishForm = () => {
 
     let characterLimit = 200;
 
-    let { blog: {banner,title,tags,des}, setEditorState,setBlog,blog,content } = useContext(EditorContext)
+    let { blog: {title,tags,des,content}, setEditorState,setBlog,blog } = useContext(EditorContext)
 
     const handleCloseEvent = () =>{
         setEditorState("editor")
@@ -53,6 +53,9 @@ const PublishForm = () => {
 
     const publishBlog = (e) => {
 
+        console.log(e)
+        console.log("m aaataa")
+
         if(e.target.className.includes("disable")){
             return ;
         }
@@ -72,7 +75,7 @@ const PublishForm = () => {
         e.target.classList.add('disable') 
 
         let blogObj = {
-            title,banner,des,content,tags,draft:false
+            title,des,content,tags,draft:false
         }
 
         axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/create-blog",blogObj,{
@@ -109,7 +112,7 @@ const PublishForm = () => {
                 <div className="max-w-[550px] center">
                     <p className="text-dark-grey mb-1">PREVIEW</p>
                     <div className="w-full aspect-vedio rounded-1g overflow-hidden bg-grey mt-4">
-                        <img src={banner}/>
+                        {/* <img src={banner}/> */}
                     </div>
                     <h1 className="text-4xl font-medium mt-2 leading-tight line-clamp-2"> {title}
 

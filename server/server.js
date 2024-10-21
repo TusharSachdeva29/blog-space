@@ -380,12 +380,16 @@ server.post("/google-auth", async (req, res) => {
 
 
 server.post('/create-blog', verifyJWT ,(req,res) => {
-    let { title,des,banner,tags,content,draft } = req.body
+    let { title,des,tags,content,draft } = req.body
+    // console.log(content)
+    console.log("req.bosy is  == ", req.body)
     let authorId = req.user;
 
     if(!title.length){
         return res.status(403).json({error:"tou must provide a title"})
-    }      
+    }   
+    
+    
 
     if(!draft){
     
@@ -393,8 +397,11 @@ server.post('/create-blog', verifyJWT ,(req,res) => {
             return res.status(403).json({error:"tou must provide a title"})
         }        
         if(!des.length || des.length>200){
-                return res.status(403).json({"error":"description must be between 1 and 200"})
+                return res.status(403).json({error:"description must be between 1 and 200"})
         }
+        // if(!content.block.length){
+        //     xout << " m !content.block.length me aaya "
+        // }
     }
 
     
@@ -406,7 +413,8 @@ server.post('/create-blog', verifyJWT ,(req,res) => {
     console.log(blog_id)
 
     let blog = new Blog({
-        title,des,banner,content,tags,author:authorId,blog_id,draft: Boolean(draft) 
+        
+        title,des,content,tags,author:authorId,blog_id,draft: Boolean(draft) 
     })
 
     blog.save().then(blog => {

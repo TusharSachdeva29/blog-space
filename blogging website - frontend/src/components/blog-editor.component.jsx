@@ -1,17 +1,23 @@
 import { Link, useNavigate } from "react-router-dom";
 import AnimationWrapper from "../common/page-animation";
 import logo from "../imgs/logo.png";
+import { useRef } from "react";
 import defaultBanner from "../imgs/blog banner.png";
 import { useContext, useEffect } from "react";
 import { EditorContext } from "../pages/editor.pages";
 import EditorJs from "@editorjs/editorjs";
 import { tools } from "./tools.component";
 import { Toaster, toast } from "react-hot-toast";
+// import { ToastContainer, toast } from 'react-toastify';
+// import 'react-toastify/dist/ReactToastify.css';
 import axios from "axios";
 import { UserContext } from "../App";
 
 const BlogEditor = () => {
-    let { blog, blog: { title, banner, content, tags, description }, setBlog, textEditor, setTextEditor, setEditorState } = useContext(EditorContext);
+    let {blog, blog: {title,des,content,tags},setBlog,textEditor,setTextEditor,setEditorState } = useContext(EditorContext)
+
+    console.log(blog)
+
 
     let { userAuth: { access_token } } = useContext(UserContext);  // Fix here
 
@@ -19,25 +25,35 @@ const BlogEditor = () => {
 
     // Use Effect for initializing Editor.js
     useEffect(() => {
+
+        // let editorl = new EditorJs({
+        //     holder: 'textEditor',
+        //     data: '',
+        //     placeholder: "lets wrtie an awersome story"
+        // })
+
         if (!textEditor.isReady) {
             setTextEditor(new EditorJs({
-                holderId: "textEditor",
-                data: content || {},  // Fix here to use blog content
+                holder: "textEditor",
+                data: content,  
                 tools: tools,
                 placeholder: "Let's write an awesome story"
             }));
         }
-    }, []);
+    },[]);
+
+
+    
 
     const handleBannerUpload = (e) => {
-        let img = e.target.files[0];
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            setBlog({ ...blog, banner: reader.result });
-        };
-        if (img) {
-            reader.readAsDataURL(img);
-        }
+        // let img = e.target.files[0];
+        // const reader = new FileReader();
+        // reader.onloadend = () => {
+        //     setBlog({ ...blog, banner: reader.result });
+        // };
+        // if (img) {
+        //     reader.readAsDataURL(img);
+        // }
     };
 
     const handleTitleKeyDown = (e) => {
@@ -54,22 +70,25 @@ const BlogEditor = () => {
     };
 
     const handleSaveDraft = (e) => {
+        console.log("m saaaave draft me aayaa")
         if (e.target.className.includes("disable")) {
             return;
         }
 
         if (!title.length) {
-            return toast.error("Write blog title before saving as draft");
+            console.log("maa title.length mea aay",title.length)
+             toast.error("Write blog title before saving as draft");
+             return 
         }
 
         let loadingToast = toast.loading("Saving draft...");
 
         e.target.classList.add('disable');
 
-        if (textEditor.isReady) {
+        // if (textEditor.isReady) {
             textEditor.save().then(content => {
                 let blogObj = {
-                    title, banner, description, content, tags, draft: true
+                    title, des, content, tags, draft: true
                 };
                 axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/create-blog", blogObj, {
                     headers: {
@@ -91,24 +110,45 @@ const BlogEditor = () => {
                     return toast.error(response.data.error);
                 });
             });
-        }
+        // }
+
+        // else return toast.error("Editor is not initialized yet");
     };
 
-    const handlePublishEvent = () => {
+const handlePublishEvent = (e) => {
+        // Check if the blog title is empty
+        e.preventDefault()
         if (!title.length) {
             return toast.error("Write blog title to publish it");
         }
+    
+        // Check if Editor.js is ready and validate content
+
         if (textEditor.isReady) {
+        console.log("ma aasdfsdfasas")
             textEditor.save().then(data => {
-                if (data.blocks.length) {
-                    setBlog({ ...blog, content: data });
-                    setEditorState("publish");
-                } else {
+                console.log("ma aya otext editor")
+
+                console.log(data)
+                // Check if there is actual content to publish
+                if (!data.blocks.length) {
                     return toast.error("Write something in your blog to publish it");
                 }
+
+                console.log(" ma set blog pr aaayua huyn deakgkgggggg")
+                setBlog({ ...blog, content: data });
+                setEditorState("publish");
+            }).catch(err => {
+                // Handle any errors that occur while saving content
+                console.error("Error saving editor content:", err);
+                return toast.error("Something went wrong while saving your blog content.");
             });
         }
+        else {
+            console.log("text editor ke maa chudd rhe hai")
+        }
     };
+    
 
     return (
         <>
@@ -130,7 +170,7 @@ const BlogEditor = () => {
                     <div className="mx-auto max-w-[900px] w-full">
                         <div className="relative aspect-video hover:opacity-80 bg-white border-4 border-grey">
                             <label htmlFor="uploadBanner">
-                                <img src={banner || defaultBanner} className="z-20" />
+                                <img src={defaultBanner} className="z-20" />
                                 <input
                                     id="uploadBanner"
                                     type="file"

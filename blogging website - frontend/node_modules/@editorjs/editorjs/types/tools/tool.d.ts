@@ -1,17 +1,33 @@
 import {API} from '../index';
 import {ToolConfig} from './tool-config';
 import {SanitizerConfig} from '../configs';
+import {MenuConfig} from './menu-config';
 
 /**
  * Abstract interface of all Tools
  */
-export interface BaseTool {
+export interface BaseTool<RenderReturnType = HTMLElement> {
   /**
    * Tool`s render method
-   * For inline Tools returns inline toolbar button
-   * For block Tools returns tool`s wrapper
+   *
+   * For Inline Tools may return either HTMLElement (deprecated) or {@link MenuConfig}
+   * @see https://editorjs.io/menu-config
+   *
+   * For Block Tools returns tool`s wrapper html element
    */
-  render(): HTMLElement;
+  render(): RenderReturnType | Promise<RenderReturnType>;
+}
+
+export interface BaseToolConstructorOptions<C extends object = any> {
+  /**
+   * Editor.js API
+   */
+  api: API;
+
+  /**
+   * Tool configuration
+   */
+  config?: ToolConfig<C>;
 }
 
 export interface BaseToolConstructable {
@@ -26,14 +42,10 @@ export interface BaseToolConstructable {
   sanitize?: SanitizerConfig;
 
   /**
-   * Title of Inline Tool
+   * Title of Inline Tool.
+   * @deprecated use {@link MenuConfig} item title instead
    */
   title?: string;
-
-  /**
-   * Describe constructor parameters
-   */
-  new (config: {api: API, config?: ToolConfig}): BaseTool;
 
   /**
    * Tool`s prepare method. Can be async
