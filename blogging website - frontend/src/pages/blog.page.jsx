@@ -8,6 +8,8 @@ import BlogInteraction from "../components/blog-interaction.component"
 import BlogPostCard from "../components/blog-post.component"
 import BlogContent from "../components/blog-content.component"
 
+import CommentsContainer from "../components/comments.component"
+
 export const blogStructure = {
     title: '',
     des : '',
@@ -29,6 +31,8 @@ const BlogPage = () => {
     const [loading , setLoading ] = useState(true)
 
     const [ islikedByUser , setLikedByUser] = useState(false)
+    const [ commentsWrapper, setCommentsWrapper ] = useState(false)
+    const [totalParentsCommentsLoaded , setTotalParentsCommentsLoaded] = useState(0)
 
     let { title, content, author: { personal_info: { fullname, username : author_username, profile_img } = {} } = {}, publishedAt } = blog;
 
@@ -70,6 +74,9 @@ const BlogPage = () => {
         setBlog(blogStructure)
         setSimilarBlogs(null)
         setLoading(true)
+        setLikedByUser(false)
+        setCommentsWrapper(false)
+        setTotalParentsCommentsLoaded(0)
     }
 
     
@@ -78,7 +85,10 @@ const BlogPage = () => {
         <AnimationWrapper>
             {
                 loading ? <Loader /> :
-                <BlogContext.Provider value={{blog,setBlog,islikedByUser,setLikedByUser}}>
+                <BlogContext.Provider value={{blog,setBlog,islikedByUser,setTotalParentsCommentsLoaded,setCommentsWrapper,setLikedByUser,commentsWrapper,totalParentsCommentsLoaded}}>
+
+                    <CommentsContainer />
+
                     <div className="max-w-[900px] center py-10 max-lg:px-[5vw]">
                         <img src={""} className="aspect-vedio" />
                         <div className="mt-12">
