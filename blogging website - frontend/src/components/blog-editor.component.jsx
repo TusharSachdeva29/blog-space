@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import AnimationWrapper from "../common/page-animation";
 import logo from "../imgs/logo.png";
 import { useRef } from "react";
@@ -20,6 +20,8 @@ const BlogEditor = () => {
 
 
     let { userAuth: { access_token } } = useContext(UserContext);  // Fix here
+    let { blog_id } = useParams();
+    
 
     let navigate = useNavigate();
 
@@ -70,7 +72,7 @@ const BlogEditor = () => {
     };
 
     const handleSaveDraft = (e) => {
-        console.log("m saaaave draft me aayaa")
+        // console.log("m saaaave draft me aayaa")
         if (e.target.className.includes("disable")) {
             return;
         }
@@ -85,19 +87,21 @@ const BlogEditor = () => {
 
         e.target.classList.add('disable');
 
-        // if (textEditor.isReady) {
+        if (textEditor.isReady) {
             textEditor.save().then(content => {
                 let blogObj = {
                     title, des, content, tags, draft: true
                 };
-                axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/create-blog", blogObj, {
+                axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/create-blog", {...blogObj,id:blog_id}, {
                     headers: {
                         'Authorization': `Bearer ${access_token}`
                     }
                 })
                 .then(() => {
+                    
+                    e.target.classList.remove
+                    ('disable');
                     toast.dismiss(loadingToast);
-                    e.target.classList.remove('disable');
                     toast.success("Saved as draft");
 
                     setTimeout(() => {
@@ -110,9 +114,9 @@ const BlogEditor = () => {
                     return toast.error(response.data.error);
                 });
             });
-        // }
+        }
 
-        // else return toast.error("Editor is not initialized yet");
+        else return toast.error("Editor is not initialized yet");
     };
 
 const handlePublishEvent = (e) => {

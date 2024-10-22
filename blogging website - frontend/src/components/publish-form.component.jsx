@@ -5,8 +5,10 @@ import { useContext } from "react"
 import Tag from "./tags.component"
 import axios from "axios"
 import { UserContext } from "../App"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 const PublishForm = () => {
+
+    let {blog_id} = useParams();
 
     let { userAuth : {access_token} } = useContext(UserContext)
 
@@ -78,7 +80,7 @@ const PublishForm = () => {
             title,des,content,tags,draft:false
         }
 
-        axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/create-blog",blogObj,{
+        axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/create-blog",{...blogObj,id:blog_id},{
             headers:{
                 'Authorization' : `Bearer ${access_token}`
             }

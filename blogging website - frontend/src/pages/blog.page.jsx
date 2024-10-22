@@ -28,7 +28,7 @@ const BlogPage = () => {
     const [ similarBlogs, setSimilarBlogs ] = useState(null)
     const [loading , setLoading ] = useState(true)
 
-    
+    const [ islikedByUser , setLikedByUser] = useState(false)
 
     let { title, content, author: { personal_info: { fullname, username : author_username, profile_img } = {} } = {}, publishedAt } = blog;
 
@@ -78,7 +78,7 @@ const BlogPage = () => {
         <AnimationWrapper>
             {
                 loading ? <Loader /> :
-                <BlogContext.Provider value={{blog,setBlog}}>
+                <BlogContext.Provider value={{blog,setBlog,islikedByUser,setLikedByUser}}>
                     <div className="max-w-[900px] center py-10 max-lg:px-[5vw]">
                         <img src={""} className="aspect-vedio" />
                         <div className="mt-12">

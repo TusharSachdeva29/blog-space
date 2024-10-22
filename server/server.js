@@ -12,6 +12,8 @@ import serviceAccountKey from "./mern-blogging-web-firebase-adminsdk-6n04c-fbb88
 import { getAuth } from "firebase-admin/auth";
 import rateLimit from 'express-rate-limit';
 import { formatPostcssSourceMap } from "vite";
+import Notification from "./Schema/Notification.js";
+
 
 const server = express();
 
@@ -384,7 +386,7 @@ server.post("/google-auth", async (req, res) => {
 
 
 server.post('/create-blog', verifyJWT ,(req,res) => {
-    let { title,des,tags,content,draft } = req.body
+    let { title,des,tags,content,draft ,id} = req.body
     // console.log(content)
     console.log("req.bosy is  == ", req.body)
     let authorId = req.user;
@@ -412,33 +414,123 @@ server.post('/create-blog', verifyJWT ,(req,res) => {
     // converting tags to lower case tech,Tech shoulf be treated same 
     tags = tags.map(tag=> tag.toLowerCase());
 
-    let blog_id = title.replace(/[^a-zA-Z0-9]/g,' ').replace(/\s+/g,"-").trim() + nanoid();
+    let blog_id = id || title.replace(/[^a-zA-Z0-9]/g,' ').replace(/\s+/g,"-").trim() + nanoid();
     // special chara in title will be reapladced by ' ' nd replace it with -
     console.log(blog_id)
 
-    let blog = new Blog({
-        
-        title,des,content,tags,author:authorId,blog_id,draft: Boolean(draft) 
-    })
-
-    blog.save().then(blog => {
-        let incrementVal = draft ? 0 : 1;
-        
-        User.findOneAndUpdate({ _id : authorId } , { $inc : {"account_info.total_posts": incrementVal} , $push : { "blogs" : blog._id } })
-        .then(user => {
-            return res.status(200).json({id : blog.blog_id })
+    if(id){
+        Blog.findOneAndUpdate({ blog_id }, { title,des,content,tags,draft:draft ? draft : false })
+        .then( () => {
+            return res.status(200).json({id: blog_id})
         })
         .catch(err => {
-            return res.status(500).json({"error": "faied to update total post number"})
+            return res.status(500).json({error : err.message})
         })
-    })
-    .catch(err => {
-        return res.status(500).json({"error":err.message})
-    })
+    }
+    else {
+        let blog = new Blog({
+        
+            title,des,content,tags,author:authorId,blog_id,draft: Boolean(draft) 
+        })
+    
+        blog.save().then(blog => {
+            let incrementVal = draft ? 0 : 1;
+            
+            User.findOneAndUpdate({ _id : authorId } , { $inc : {"account_info.total_posts": incrementVal} , $push : { "blogs" : blog._id } })
+            .then(user => {
+                return res.status(200).json({id : blog.blog_id })
+            })
+            .catch(err => {
+                return res.status(500).json({"error": "faied to update total post number"})
+            })
+        })
+        .catch(err => {
+            return res.status(500).json({"error":err.message})
+        })
+    }
 
     // return res.json({status:"done"})
 
 })
+
+// Endpoint to handle liking/unliking a blog
+server.post("/like-blog", verifyJWT, async (req, res) => {
+    const user_id = req.user;
+    const { _id, islikedByUser } = req.body;
+
+    // Determine if we are adding or removing a like
+    const incrementVal = !islikedByUser ? 1 : -1;
+
+    try {
+        // First, find the blog and increment total_likes
+        const blog = await Blog.findOneAndUpdate(
+            { _id }, 
+            { $inc: { "activity.total_likes": incrementVal } }, 
+            { new: true } // This will return the updated blog
+        );
+
+        // Check if the blog exists
+        if (!blog) {
+            return res.status(404).json({ error: "Blog not found" });
+        }
+
+        // If the blog is liked, create a notification
+        if (!islikedByUser) {
+            const likeNotification = new Notification({
+                type: "like",
+                blog: _id,
+                notification_for: blog.author,
+                user: user_id
+            });
+
+            // Save the notification to the database
+            await likeNotification.save();
+            return res.status(200).json({ liked_by_user: true });
+        } else {
+            // If the blog is unliked, remove the notification
+            const deletedNotification = await Notification.findOneAndDelete({
+                user: user_id,
+                blog: _id,
+                type: "like"
+            });
+
+            // If the notification was found and deleted
+            if (deletedNotification) {
+                return res.status(200).json({ liked_by_user: false });
+            } else {
+                return res.status(404).json({ error: "Notification not found" });
+            }
+        }
+
+    } catch (err) {
+        // Handle any errors that occur
+        console.error(err);
+        return res.status(500).json({ error: err.message });
+    }
+});
+
+// Endpoint to check if a blog is liked by a user
+server.post("/isliked-by-user", verifyJWT, async (req, res) => {
+    const user_id = req.user;
+    const { _id } = req.body;
+
+    try {
+        // Check if a "like" notification exists for this user and blog
+        const isLiked = await Notification.exists({
+            user: user_id,
+            type: "like",
+            blog: _id
+        });
+
+        return res.status(200).json({ result: Boolean(isLiked) });
+
+    } catch (err) {
+        // Handle any errors that occur
+        console.error(err);
+        return res.status(500).json({ error: err.message });
+    }
+});
+
 
 server.listen(PORT, () => {
     console.log(`Listening on port ${PORT}`);
