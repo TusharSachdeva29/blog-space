@@ -7,10 +7,13 @@ import { BlogContext } from "../pages/blog.page";
 
 const CommentFeild = ({ action }) => {
 
-    let { blog: {_id,author:{_id:blog_author}} }  = useContext(BlogContext)
+    let { blog, blog: { _id, author: { _id: blog_author }, comments, activity , activity:{total_comments, total_parent_comments} }, setBlog, setTotalParentsCommentsLoaded } = useContext(BlogContext);
 
-    let { userAuth : {access_token} } = useContext(UserContext)
 
+    
+
+    let { userAuth : {access_token , username , fullname, profile_img}  } = useContext(UserContext)
+ 
     const [ comment , setComment ] = useState("");
 
     const handleComment = () => {
@@ -30,6 +33,22 @@ const CommentFeild = ({ action }) => {
         })
         .then(({ data }) => {
             console.log(data)
+
+            setComment("")
+            data.commented_by = { personal_info: {username, profile_img, fullname} }
+
+            let newCommentArr;
+
+            data.childrenLevel = 0;
+
+            newCommentArr = [data]
+            let parentCommentIncrementaval = 1;
+
+            setBlog({ ...blog,comments:{...comments , results : newCommentArr} , activity: {...activity , total_comments : total_comments + 1 , total_parent_comments : total_parent_comments + parentCommentIncrementaval} })
+
+
+            setTotalParentsCommentsLoaded(preVal => preVal+ parentCommentIncrementaval)
+
         })
         .catch(err => {
             console.log("ma aaaa err mein")

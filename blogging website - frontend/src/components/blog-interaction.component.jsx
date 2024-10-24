@@ -13,6 +13,7 @@ const BlogInteraction = () => {
     let { blog,blog: {_id , title , blog_id,activity,activity: {total_likes, total_comments},author:{personal_info : {username : author_username}}} , setBlog , islikedByUser,setLikedByUser, setCommentsWrapper
 } = useContext(BlogContext);
 
+
     let { userAuth : {username,access_token} } = useContext(UserContext)
 
     useEffect(() => {
@@ -76,15 +77,18 @@ const BlogInteraction = () => {
                 
                 <div className="flex gap-3 items-center">
 
-                    <button className={"w-10 h-10 rounded-full flex items-center justify-center " + ( islikedByUser ? "bg-red/20 text-red" : "bg-grey/80" ) }
+                    {/* console.log(total_likes) */}
+ 
+                     <button className={"w-10 h-10 rounded-full flex items-center justify-center " + ( islikedByUser ? "bg-red/20 text-red" : "bg-grey/80" ) }
                         onClick={handleLike}
                     >
                         <i className="fi fi-rr-heart"></i>
                     </button>
 
                     <p className="text-xl text-dark-grey">
+                        
                         {total_likes} likes
-                    </p>
+                    </p> 
 
                    
 
@@ -128,3 +132,19 @@ const BlogInteraction = () => {
 }
 
 export default BlogInteraction
+
+
+// let {
+//     blog,
+//     blog: {
+//         _id,
+//         title,
+//         blog_id,
+//         activity = { total_likes: 0, total_comments: 0 },
+//         author: { personal_info: { username: author_username } = {} } = {},
+//     } = {},
+//     setBlog,
+//     islikedByUser,
+//     setLikedByUser,
+//     setCommentsWrapper,
+// } = useContext(BlogContext);

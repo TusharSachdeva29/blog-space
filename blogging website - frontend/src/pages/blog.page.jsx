@@ -8,18 +8,19 @@ import BlogInteraction from "../components/blog-interaction.component"
 import BlogPostCard from "../components/blog-post.component"
 import BlogContent from "../components/blog-content.component"
 
-import CommentsContainer from "../components/comments.component"
+import CommentsContainer, { fetchComments } from "../components/comments.component"
 
 export const blogStructure = {
     title: '',
-    des : '',
-    content:[],
-    author: {personal_info: {}},
-    // banner:'',
-    publishedAt:''
-}
+    des: '',
+    content: [],
+    author: { personal_info: {} },
+    activity: { total_likes: 0, total_comments: 0 },  // <-- Add default values for activity
+    publishedAt: ''
+};
 
-export const BlogContext = createContext({})
+
+export const BlogContext = createContext({  })
 
 
 const BlogPage = () => {
@@ -34,7 +35,7 @@ const BlogPage = () => {
     const [ commentsWrapper, setCommentsWrapper ] = useState(false)
     const [totalParentsCommentsLoaded , setTotalParentsCommentsLoaded] = useState(0)
 
-    let { title, content, author: { personal_info: { fullname, username : author_username, profile_img } = {} } = {}, publishedAt } = blog;
+    let { title, content, author: { personal_info: { fullname, username : author_username, profile_img }},publishedAt } = blog;
 
 
 
@@ -42,9 +43,20 @@ const BlogPage = () => {
     
     const fetchBlog = () => {
         axios.post(import.meta.env.VITE_SERVER_DOMAIN+"/get-blog",{blog_id})
-        .then(({data : {blog}}) => {
+        .then( async ({data : {blog}}) => {
 
-            axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/search-blogs",{limit:6 , eliminate_blog : blog_id  })
+            blog.comments = await fetchComments({blog_id : blog._id , setParentCommentCountFun : setTotalParentsCommentsLoaded
+
+            })
+
+            // fetchComments
+
+            setBlog(blog)
+
+            console.log(blog)
+
+
+            axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/search-blogs",{tag: blog.tags[0],limit:6 , eliminate_blog : blog_id  })
             .then(({data})=> {
                 setSimilarBlogs(data.blogs)
                 console.log(data.blogs)
@@ -52,10 +64,6 @@ const BlogPage = () => {
             })
 
 
-
-            setBlog(blog)
-            console.log("m aatat")
-            console.log(blog);
             setLoading(false)
             console.log(blog)
         })
@@ -85,7 +93,13 @@ const BlogPage = () => {
         <AnimationWrapper>
             {
                 loading ? <Loader /> :
-                <BlogContext.Provider value={{blog,setBlog,islikedByUser,setTotalParentsCommentsLoaded,setCommentsWrapper,setLikedByUser,commentsWrapper,totalParentsCommentsLoaded}}>
+                <BlogContext.Provider value={{blog,setBlog,islikedByUser,  
+                    
+                   setTotalParentsCommentsLoaded,setCommentsWrapper,
+                    
+                    setLikedByUser,
+                commentsWrapper,totalParentsCommentsLoaded
+                }}>
 
                     <CommentsContainer />
 
@@ -116,14 +130,14 @@ const BlogPage = () => {
 
                             <div className="my-12 font-gelasio blog-page-content">
                                 {
-                                    content[0].blocks.map((block,i) => {
-                                        return <div key={i} className="my-4 md:my-8" >
+                                    content.length > 0 && content[0]?.blocks?.map((block, i) => (
+                                        <div key={i} className="my-4 md:my-8">
                                             <BlogContent block={block} />
                                         </div>
-                                    })
+                                    ))
                                 }
-
                             </div>
+
 
                         <BlogInteraction />
 
@@ -158,3 +172,18 @@ const BlogPage = () => {
 }
 
 export default BlogPage
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    

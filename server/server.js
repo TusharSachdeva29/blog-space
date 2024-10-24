@@ -12,6 +12,8 @@ import serviceAccountKey from "./mern-blogging-web-firebase-adminsdk-6n04c-fbb88
 import { getAuth } from "firebase-admin/auth";
 import rateLimit from 'express-rate-limit';
 import { formatPostcssSourceMap } from "vite";
+
+
 import Notification from "./Schema/Notification.js";
 
 import Comment from "./schema/Comment.js"
@@ -534,6 +536,7 @@ server.post("/isliked-by-user", verifyJWT, async (req, res) => {
 });
 
 server.post("/add-comment", verifyJWT , (req,res) => {
+    console.log("m aayta add comment me ")
     let user_id = req.user
     let{_id, comment , blog_author} = req.body 
 
@@ -554,6 +557,7 @@ server.post("/add-comment", verifyJWT , (req,res) => {
         Blog.findOneAndUpdate({_id},{ $push:{"comments": commentFile._id} , $inc : {"activity.total_comments": 1} , "activity.total_parent_comments" : 1 })
         .then(blog => {
             console.log("new comment created")
+            
         })
 
         let notificationObj = {
@@ -570,6 +574,7 @@ server.post("/add-comment", verifyJWT , (req,res) => {
         })
     })
     .catch(err => {
+        console.log("add-commetn ke error section ke aaay")
         return res.status(403).json({
             error : err.message
         })
@@ -577,6 +582,24 @@ server.post("/add-comment", verifyJWT , (req,res) => {
 
 })
 
+server.post("/get-blog-comments", (req,res) => {
+    let { blog_id , skip } = req.body;
+    let maxLimit = 5;
+    Comment.find({blog_id , isReply : false})
+    .populate("commented_by","persoanal_info.username personal_info.fullname personal_info.profile_img")
+    .skip(skip)
+    .limit(maxLimit)
+    .sort({
+        'commentedAt' : -1
+    })
+    .then(comment => {
+        return res.status(200).json(comment)
+    })
+    .catch(err => {
+        console.log(err.message)
+        return res.status(500).json({error : err.message})
+    })
+})
 
 server.listen(PORT, () => {
     console.log(`Listening on port ${PORT}`);
