@@ -39,11 +39,13 @@ const BlogPage = () => {
 
 
 
-    console.log(blog_id)
+    // console.log(blog_id)
     
     const fetchBlog = () => {
         axios.post(import.meta.env.VITE_SERVER_DOMAIN+"/get-blog",{blog_id})
         .then( async ({data : {blog}}) => {
+
+            console.log(blog)
 
             blog.comments = await fetchComments({blog_id : blog._id , setParentCommentCountFun : setTotalParentsCommentsLoaded
 
@@ -52,7 +54,7 @@ const BlogPage = () => {
             // fetchComments
 
             setBlog(blog)
-
+// 
             console.log(blog)
 
 

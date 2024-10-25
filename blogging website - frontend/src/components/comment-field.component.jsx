@@ -2,13 +2,12 @@ import { useContext, useState } from "react";
 import { UserContext } from "../App";
 import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
-// import BlogContent from "./blog-content.component";
+import BlogContent from "./blog-content.component";
 import { BlogContext } from "../pages/blog.page";
 
 const CommentFeild = ({ action }) => {
 
-    let { blog, blog: { _id, author: { _id: blog_author }, comments, activity , activity:{total_comments, total_parent_comments} }, setBlog, setTotalParentsCommentsLoaded } = useContext(BlogContext);
-
+    let { blog, blog: { _id, author: { _id: blog_author }, comments,comments:{results: commentsArr},  activity , activity:{total_comments, total_parent_comments} }, setBlog, setTotalParentsCommentsLoaded } = useContext(BlogContext);
 
     
 
@@ -32,7 +31,7 @@ const CommentFeild = ({ action }) => {
             }
         })
         .then(({ data }) => {
-            console.log(data)
+            console.log("m hun data " , data)
 
             setComment("")
             data.commented_by = { personal_info: {username, profile_img, fullname} }
@@ -41,7 +40,7 @@ const CommentFeild = ({ action }) => {
 
             data.childrenLevel = 0;
 
-            newCommentArr = [data]
+            newCommentArr = [data, ...commentsArr]
             let parentCommentIncrementaval = 1;
 
             setBlog({ ...blog,comments:{...comments , results : newCommentArr} , activity: {...activity , total_comments : total_comments + 1 , total_parent_comments : total_parent_comments + parentCommentIncrementaval} })
@@ -59,14 +58,13 @@ const CommentFeild = ({ action }) => {
 
     return (
         <>
+
             <Toaster/>
             <textarea value = {comment} onChange={(e) => setComment(e.target.value)} placeholder="leave a comment .. " className="input-box pl-5 placeholder:text-dark-grey resize-none h-[150px] overflow-auto"></textarea>
             <button className="btn-dark mt-5px-10"
                 onClick={handleComment}
             > {action}
             </button>
-
-
 
         </>
     )
