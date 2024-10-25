@@ -17,12 +17,12 @@ export const fetchComments = async ({skip = 0,blog_id,setParentCommentCountFun ,
 
         })
 
-        setParentCommentCountFun(preVal => preVal+ data.length )
+        setParentCommentCountFun(preVal => preVal + data.length )
 
         if(comment_array == null){
             res = {results : data}
         }else{
-            res = { results : {...comment_array,  ...data} }
+            res = { results : [...comment_array,  ...data] }
         }
     })
 
@@ -32,9 +32,18 @@ export const fetchComments = async ({skip = 0,blog_id,setParentCommentCountFun ,
 
 const CommentsContainer = () => {
 
-    let { blog:{title , comments : {results: commentsArr}},commentsWrapper , setCommentsWrapper } = useContext(BlogContext)
+    let {blog ,  blog:{_id , title , comments : {results: commentsArr} , activity: {total_parent_comments}},commentsWrapper , setCommentsWrapper , totalParentsCommentsLoaded , setTotalParentsCommentsLoaded , setBlog} = useContext(BlogContext)
 
     // console.log(commentsArr)
+
+    const loadMoreComments = async () => {
+        let newCommentsArr = await fetchComments({skip: totalParentsCommentsLoaded , blog_id : _id ,setParentCommentCountFun: setTotalParentsCommentsLoaded , comment_array : commentsArr })
+
+        setBlog({...blog , comments : newCommentsArr})
+
+        console.log(blog)
+    }
+    
 
     return (
         <div className={"max-sm:w-full fixed " + (commentsWrapper ? "top-0 sm:right-0" : "top-[100% sm:right-[-100%]") + " duration-700 max:sm:right-0 sm:top-0 w-[30%] min-w-[350px] h-full z-50 bg-white shadow-2xl p-8 px-16 overflow-y-auto overflow-x-hidden"}>
@@ -68,6 +77,15 @@ const CommentsContainer = () => {
                         <CommentCard index={i} leftval={comment.childrenLevel * 4} commentData={comment}/>
                     </AnimationWrapper> 
                 }) : <NoDataMessage message="no data message" />
+            }
+
+            {
+                total_parent_comments > totalParentsCommentsLoaded ? 
+                <button
+                onClick={loadMoreComments}
+                className="text-dark-grey p-2 px-3 hover:bg-grey/30 rounded-md flex items-center gap-2">
+                    Load More
+                </button> : "No more comments to load"
             }
 
 
