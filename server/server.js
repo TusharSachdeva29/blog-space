@@ -538,35 +538,52 @@ server.post("/isliked-by-user", verifyJWT, async (req, res) => {
 server.post("/add-comment", verifyJWT , (req,res) => {
     console.log("m aayta add comment me ")
     let user_id = req.user
-    let{_id, comment , blog_author} = req.body 
+    let{_id, comment , blog_author , replying_to } = req.body 
 
     if(!comment.length){
         return res.status(403).json({error :" write something to leave a comment "})
     }
 
     // creatinf a comment des
-    let commentObj  = new Comment ({
+    let commentObj  = {
         blog_id : _id, blog_author, comment , commented_by : user_id  
-    })
+    }
+
+    if(replying_to){
+        commentObj.parent = replying_to
+        commentObj.isReply = true;
+    }
 
     console.log("m yaha tk aauya commentObj")
 
-    commentObj.save().then(commentFile => {
+    new Comment(commentObj).save().then(async commentFile => {
         let {  comment, commentedAt , children } = commentFile
 
-        Blog.findOneAndUpdate({_id},{ $push:{"comments": commentFile._id} , $inc : {"activity.total_comments": 1 , "activity.total_parent_comments" : 1 }})
+        Blog.findOneAndUpdate({_id},{ $push:{"comments": commentFile._id} , $inc : {"activity.total_comments": 1 , "activity.total_parent_comments" : replying_to ? 0 : 1 }})
         .then(blog => {
             console.log("new comment created")
             
         })
 
         let notificationObj = {
-            type : "comment",
+            type : replying_to ? "reply" : "comment",
             blog : _id ,
             notification_for : blog_author,
             user : user_id ,
             comment : commentFile._id
         }
+
+
+        if(replying_to){
+            notificationObj.replied_on_comment = replying_to;
+            await Comment.findOneAndUpdate({_id : replying_to} ,{$push : { children : commentFile._id }} )
+            .then(replyingToCommentDoc => {
+                notificationObj.notification_for = replyingToCommentDoc.commented_by 
+            })
+            
+        }
+
+
         new Notification(notificationObj).save().then(notification => console.log("new notificatin created"))
 
         return res.status(200).json({
@@ -601,6 +618,35 @@ server.post("/get-blog-comments", (req,res) => {
     })
 })
 
+server.post("/get-replies", (req,res) => {
+    console.log("m req.body hun get-replies ke " , req.body)
+    let { _id , skip } = req.body
+    let maxLimit = 5
+    Comment.findOne({_id})
+    .populate({
+        path  : "children",
+        option : {
+            limit : maxLimit,
+            skip : skip,
+            sort : {'commentedAt' : -1}
+        },
+        populate : {
+            path : 'commented_by',
+            select : "personal_info.profile_img personal_info.fullname personal_info.username"
+        },
+        select : "-blog_id -updatedAt"
+    })
+    .select("children")
+    .then(doc => {
+        return res.status(200).json({replies:doc.children})
+    })
+    .catch(err => {
+        console.log("ma erroe me aatay get-replises ke")
+        return res.status(500).json({error : err.message})
+    })
+})
+
 server.listen(PORT, () => {
     console.log(`Listening on port ${PORT}`);
 });
+ 
