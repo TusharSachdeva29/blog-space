@@ -646,6 +646,55 @@ server.post("/get-replies", (req,res) => {
     })
 })
 
+const deleteComments = (_id) => {
+    Comment.findOneAndDelete({_id})
+    .then(comment => {
+         if(comment.parent){
+            Comment.findOneAndUpdate({_id : comment.parent} , {$pull : {children : _id}})
+            .then(data => console.log("comment dekete from parent "))
+            .catch(err => console.log(err))
+        }
+
+        Notification.findOneAndDelete({comment : _id}).then(notification => console.log('comment notification deleted'))
+
+        Notification.findOneAndDelete({reply : _id}).then(notification => console.log('reply notifivcation deleted'))
+
+
+        Blog.findOneAndUpdate({_id : comment.blog_id} , {$pull : {comments : _id} , $inc : {"activity.total_comments" : -1} , "activity.total_parent_comments" : comment.parent ? 0 : -1})
+        .then(blog => {
+            console.log(blog)
+            if(comment.children.length){
+                comment.children.map(replies => {
+                    deleteComments(replies)
+                })
+            }
+        })
+    })
+    .catch(err => {
+        console.log(err.message)
+    })
+}
+
+
+server.post("/delete-comment", verifyJWT ,(req,res) => {
+    let user_id = req.user
+    let {_id} = req.body
+    Comment.findOne({_id})
+    .then(comment => {
+        if (!comment) {
+            return res.status(404).json({ error: "Comment not found" });
+        }
+        if(user_id == comment.commented_by || user_id == comment.blog_author){
+            deleteComments(_id)
+
+            return res.status(200).json({status : 'done'})
+        }
+        else {
+            return res.status(402).json({error : "you cann not delete this ccommetn"})
+        }
+    })
+})
+
 server.listen(PORT, () => {
     console.log(`Listening on port ${PORT}`);
 });
