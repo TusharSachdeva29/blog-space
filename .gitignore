@@ -39,3 +39,6 @@ yarn-error.log*
 # Ignore compiled files (e.g., TypeScript or Babel output)
 *.tsbuildinfo
 .cache/
+
+
+.mern-blogging-web-firebase-adminsdk-6n04c-fbb88be2fa.json
