@@ -1,9 +1,9 @@
-POST http://localhost:9007/get-blog
-Content-Type: application/json
+# POST http://localhost:9007/get-blog
+# Content-Type: application/json
 
-{
-    "blog_id" : "travelC72I_7RegOTzUyxIgTSso"
-}
+# {
+#     "blog_id" : "travelC72I_7RegOTzUyxIgTSso"
+# }
 
 # POST http://localhost:9007/get-profile
 # Content-Type: application/json
@@ -11,4 +11,15 @@ Content-Type: application/json
 # {
 #     "username" : "tushar.sachdeva.ug23"
 # }
+# "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2ZjQ0MTJlZDUxMzcyNmY0MWE1ZGFjYyIsImlhdCI6MTczMDczMzY5OSwiZXhwIjoxNzMwNzM3Mjk5fQ.7vOxWX81ckJTu7TmhGsViO_Hc2HUV36aPFFt9XxreuM"
  
+
+POST http://localhost:9007/change-password
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2ZjQ0MTJlZDUxMzcyNmY0MWE1ZGFjYyIsImlhdCI6MTczMDczMzY5OSwiZXhwIjoxNzMwNzM3Mjk5fQ.7vOxWX81ckJTu7TmhGsViO_Hc2HUV36aPFFt9XxreuM
+
+{
+    "currentPassword" : "Tusharr2@@" ,
+    "newPassword": "Tusharr2@@"
+}
+

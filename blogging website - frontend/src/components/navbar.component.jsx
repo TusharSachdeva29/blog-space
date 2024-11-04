@@ -40,7 +40,7 @@ const NavBar = () => {
 
   return (
     <div>
-      <nav className="navbar relative flex items-center justify-between">
+      <nav className="navbar z-50">
         {/* Logo */}
         <Link to="/" className="flex-none w-10">
           <img src={logo} alt="Logo" className="w-full" />

@@ -153,9 +153,7 @@ const removeCommentsCards = (startingPoint, isDelete = false) => {
                     }
                 }
             }
-            return <button>
-
-            </button>
+            
         }
         
 
