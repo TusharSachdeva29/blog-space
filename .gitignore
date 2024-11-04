@@ -41,4 +41,6 @@ yarn-error.log*
 .cache/
 
 
-.mern-blogging-web-firebase-adminsdk-6n04c-fbb88be2fa.json
+# .mern-blogging-web-firebase-adminsdk-6n04c-fbb88be2fa.json
+
+mern-blogging-web-firebase-adminsdk-6n04c-fbb88be2fa.json
