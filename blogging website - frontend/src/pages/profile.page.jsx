@@ -23,9 +23,16 @@ export const profileDataStructure = {
     total_posts: 0,
     total_reads: 0,
   },
-  social_links: {},
+  social_links: {
+    youtube: "https://www.youtube.com/yourchannel",
+    github: "https://github.com/yourusername",
+    instagram: "https://www.instagram.com/yourusername",
+    twitter: "https://twitter.com/yourusername",
+    linkedin: "https://www.linkedin.com/in/yourusername",
+  },
   joinedAt: " ",
 };
+
 
 const ProfilePage = () => {
   let { id: profileId } = useParams(); // Get the profile ID from the route params
