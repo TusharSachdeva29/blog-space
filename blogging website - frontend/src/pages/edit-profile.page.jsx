@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react"
+import { useContext, useEffect, useRef, useState } from "react"
 import { UserContext } from "../App"
 import toast, { Toaster } from "react-hot-toast"
 import axios from "axios"
@@ -6,12 +6,14 @@ import { profileDataStructure } from "./profile.page"
 import AnimationWrapper from "../common/page-animation"
 import Loader from "../components/loader.component"
 import InputBox from "../components/input.component"
+import { storeInSession } from "../common/session"
+import e from "cors"
 
 const EditProfile = () => {
 
     let bioLimit = 150
     
-    let {userAuth , userAuth : {access_token}} = useContext(UserContext)
+    let {userAuth , userAuth : {access_token} , setUserAuth} = useContext(UserContext)
 
     const [profile, setProfile ] = useState(profileDataStructure)
 
@@ -21,11 +23,17 @@ const EditProfile = () => {
 
     let { personal_info: {fullname , username: profile_username, profile_img,email, bio} , social_links   } = profile
 
+    const[updatedProfileImg , setUpdatedProfileImg] = useState(null)
+
+    let profileImgEle = useRef();
+
+    let editProfileForm = useRef();
+
     useEffect(() => {
         if(access_token){
             axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/get-profile" , {username : userAuth.username})
             .then(({data}) => {
-                console.log(data)
+                // console.log(data)
                 setProfile(data)
                 setLoading(false)
             })
@@ -39,15 +47,81 @@ const EditProfile = () => {
         setCharactersLeft(bioLimit - e.target.value.length)
     }
 
-    const handleImagePreview = (e) => {
-        console.log(e.target.files)
+    // const handleImagePreview = (e) => {
+    //     console.log(e.target.files[0])
+    //     let img = e.target.files[0];
+
+    //     profileImgEle.current.src = URL.createObjectURL(img)
+
+    //     setUpdatedProfileImg(img)
+
+    //     // now upload img to aws database
+    // }
+
+    // const handleImageUpload = (e) => {
+    //     e.preventDefault();
+    //     if(updatedProfileImg){
+    //         let loadingToast = toast.loading("uploading ...")
+    //         e.target.setAttribute("disabled",true)
+    //         uploadImage(updatedProfileImg)
+    //         .then(url => {
+
+    //             if(url){
+    //                 axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/update-profile" , {url } , {
+    //                     headers : {
+    //                         'Authorization' : `Bearer ${access_token}`
+    //                     }
+    //                 })
+    //                 .then(({data}) => {
+    //                     let newUserAuth = { ...userAuth, profile_img : data.profile_img }
+
+    //                     storeInSession("user", JSON.stringify(newUserAuth))
+    //                     setUserAuth(newUserAuth)
+
+    //                     setUpdatedProfileImg(null)
+
+    //                     toast.dismiss(loadingToast)
+    //                     e.target.removeAttribute("disabled")
+
+    //                     toast.success("Uploaded 👌")
+    //                 })
+    //                 .catch(({response}) => {
+    //                     toast.dismiss(loadingToast)
+    //                     e.target.removeAttribute("disabled")
+
+    //                     toast.success(response.data.error)
+    //                 })
+    //             }
+                
+    //         })
+    //         .catch(err => {
+    //             console.log(err);
+    //         })
+    //     }
+    // }
+
+    const handleSubmit = (e) => {
+
+        console.log("m aaya a")
+        e.preventDefault();
+
+        let form = new FormData(editProfileForm.current);
+
+        let formData = {  };
+
+        for(let [key,value] of form.entries() ){
+            formData[key] = value;
+        }
+
+        console.log(formData)
+
     }
 
     return (
         <AnimationWrapper>
             {
                 loading ? <Loader/> : 
-                <form>
+                <form ref={editProfileForm}>
                     <Toaster />
 
                     <h1 className="max-md:hidden">Edit Profile</h1>
@@ -61,14 +135,14 @@ const EditProfile = () => {
                                     Upload Image
                                 </div>
 
-                                <img src={profile_img} />
+                                <img ref={profileImgEle}  src={profile_img} />
 
                                 
                             </label>
 
-                            <input type = "file" id ="uploadImg" accept=".jpeg , .png , .jpg" hidden onChange={handleImagePreview}/>
+                            <input type = "file" id ="uploadImg" accept=".jpeg , .png , .jpg" hidden/>
 
-                            <button className="btn-light mt-5 max-lg:center lg:w-full px-10">
+                            <button className="btn-light mt-5 max-lg:center lg:w-full px-10" >
                                 Upload
                             </button>
 
@@ -115,7 +189,7 @@ const EditProfile = () => {
                                 })
                             }
                             </div>
-                            <button className="btn-dark w-auto px-10" type = "submit"> Update</button>
+                            <button className="btn-dark w-auto px-10" onClick={handleSubmit}>Update</button>
                         </div>
 
                     </div>
