@@ -24,14 +24,14 @@ const Homepage = () => {
     axios
       .post(import.meta.env.VITE_SERVER_DOMAIN + "/latest-blogs", { page })
       .then(async ({ data }) => {
-        console.log(data.blogs);
+        // console.log(data.blogs);
         let formateData = await filterPaginationData({
           state: blogs,
           data: data.blogs,
           page,
           countRoute: "/all-latest-blog-count" // This should match your server route
         });
-        console.log(formateData);
+        // console.log(formateData);
         setBlogs(formateData);
       })
       .catch((err) => {
@@ -44,7 +44,7 @@ const Homepage = () => {
     axios
       .get(import.meta.env.VITE_SERVER_DOMAIN + "/trending-blogs")
       .then(({ data }) => {
-        console.log(data.blogs);
+        // console.log(data.blogs);
         setTrendingBlogs(data.blogs);
       })
       .catch((err) => {
@@ -73,7 +73,7 @@ const Homepage = () => {
           countRoute: "/search-blogs-count", // This should match your server route
           data_to_send: {tag:pageState }
         });
-        console.log(formateData);
+        // console.log(formateData);
         setBlogs(formateData);
 
   

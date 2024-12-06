@@ -14,12 +14,17 @@
 # "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2ZjQ0MTJlZDUxMzcyNmY0MWE1ZGFjYyIsImlhdCI6MTczMDczMzY5OSwiZXhwIjoxNzMwNzM3Mjk5fQ.7vOxWX81ckJTu7TmhGsViO_Hc2HUV36aPFFt9XxreuM"
  
 
-POST http://localhost:9007/change-password
-Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2ZjQ0MTJlZDUxMzcyNmY0MWE1ZGFjYyIsImlhdCI6MTczMDczMzY5OSwiZXhwIjoxNzMwNzM3Mjk5fQ.7vOxWX81ckJTu7TmhGsViO_Hc2HUV36aPFFt9XxreuM
+GET http://localhost:9007/new-notification
+# Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2ZjQ0MTJlZDUxMzcyNmY0MWE1ZGFjYyIsImlhdCI6MTczMDkzNDYyOCwiZXhwIjoxNzMwOTM4MjI4fQ.foLFZ_RamQobBusFcElFFbsFn7mGmMaCS_sqCCRHbBU
 
-{
-    "currentPassword" : "Tusharr2@@" ,
-    "newPassword": "Tusharr2@@"
-}
+# POST http://localhost:9007/signin
+# Content-Type: application/json
+
+# {
+#     "email" : "tushar.sachdeva2.ug23@nsut.ac.in",
+#     "password" : "Tushar2@@"
+# }
+
+
 

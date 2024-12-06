@@ -114,7 +114,45 @@ const EditProfile = () => {
         }
 
         console.log(formData)
+        let { username , bio , youtube , facebook , twitter , github , instagram , website } = formData;
 
+        if(username.length < 3){
+            return toast.error("username should be atleast 3 letters long ")
+        } 
+        if(bio.length > bioLimit){
+            return toast.error(`bio should not be more than ${bioLimit}`)
+        }
+
+        let loadingToast = toast.loading("updating ...")
+
+        e.target.setAttribute("disabled" , true)
+
+        axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/update-profile" , {
+            username , bio , 
+            social_links : { youtube , facebook , twitter , github , instagram, website }
+        } ,{
+            headers : {
+                'Authorization' : `Bearer ${access_token}`
+            }
+        })
+        .then(({data}) => {
+            if(userAuth.username != data.username ){
+                let newUserAuth = {...userAuth , username : data.username}
+
+                storeInSession("user" , JSON.stringify(newUserAuth))
+
+                setUserAuth(newUserAuth)
+            }
+
+            toast.dismiss(loadingToast)
+            e.target.removeAttribute("disabled")
+            toast.success("profile updated")
+        })
+        .catch(({ response }) => {
+            toast.dismiss(loadingToast)
+            e.target.removeAttribute("disabled")
+            toast.error(response.data.error)
+        })
     }
 
     return (

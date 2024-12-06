@@ -13,6 +13,7 @@ import BlogPage from "./pages/blog.page";
 import SideNav from "./components/sidenavbar.component";
 import ChangePassword from "./pages/change-password.page";
 import EditProfile from "./pages/edit-profile.page";
+import Notifications from "./pages/notifications.page";
 
 const App = () => {
   const [userAuth, setUserAuth] = useState({ username: null, access_token: null });
@@ -38,6 +39,11 @@ const App = () => {
         <Route path ="/editor" element = {<Editor/>} />
         <Route path ="/editor/:blog_id" element = {<Editor/>} />
         <Route path="/" element={<NavBar />} >
+        <Route index element={<Homepage/>}/>
+          <Route path = "dashboard" element = {<SideNav/>}>
+              <Route path = "notifications" element={<Notifications/>}/>
+
+          </Route>
           <Route index element={<Homepage/>}/>
           <Route path = "settings" element = {<SideNav/>}>
 
@@ -45,6 +51,7 @@ const App = () => {
               <Route path = "change-password" element={<ChangePassword/>}/>
 
           </Route>
+          <Route path="user/:id" element={<ProfilePage />} />
           <Route path="signin" element={<UserAuthForm type="sign-in" />} />
           <Route path="signup" element={<UserAuthForm type="sign-up" />} />
           <Route path = "search/:query" element = {<SearchPage/>}/>

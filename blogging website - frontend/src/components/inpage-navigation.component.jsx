@@ -9,7 +9,7 @@ const InpageNavigation = ({ routes ,defaultHidden =[], defaultActiveIndex =0,chi
   activeTabRef = useRef()
 
   const changePageState = (btn, i) => {
-    console.log(btn, i);
+    // console.log(btn, i);
     const { offsetWidth, offsetLeft } = btn;
 
     if (activeTabLineRef.current) {

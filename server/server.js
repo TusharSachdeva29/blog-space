@@ -441,6 +441,67 @@ server.post("/update-profile-img" , verifyJWT , (req,res) => {
 
 })
 
+server.post("/update-profile" , verifyJWT , (req,res) => {
+
+    let { username , bio , social_links } = req.body;
+    
+    if(username.length < 3){
+        return res.status(403).json({error : "username should eb ateleast 3 letters long"})
+    }
+
+    if(bio.length > 150){
+        return res.status(403).json({error : `bio should not be more than 150`})
+    }
+
+    let socialLinksArr =  Object.keys(social_links)
+
+    try{    
+
+        for (let i = 0; i < socialLinksArr.length; i++) {
+            const link = social_links[socialLinksArr[i]];
+        
+            if (link && typeof link === 'string' && link.length) {
+                try {
+                    let hostname = new URL(link).hostname;
+        
+                    // Construct expected domain format and compare directly
+                    const expectedDomain = `${socialLinksArr[i]}.com`;
+                    if (!hostname.endsWith(expectedDomain) && socialLinksArr[i] !== 'website') {
+                        // Return error response with a corrected message
+                        return res.status(403).json({ error: `${socialLinksArr[i]} link is invalid; you must enter a valid link.` });
+                    }
+                } catch (error) {
+                    return res.status(400).json({ error: `Invalid URL format for ${socialLinksArr[i]}` });
+                }
+            }
+        }
+        
+
+    } catch(err){
+        return res.status(500).json({error : 'youmust provide full social links with https included'})
+    }
+
+    let updateObj = { 
+        "perosnal_info.username" : username , 
+        "personal_info.bio" : bio ,
+        social_links
+    }
+
+    User.findOneAndUpdate({_id : req.user} , updateObj , {
+        runValidators : true // i want to validate the data before updating and reason is i want to make sure username is stil unique
+    })
+    .then(() => {
+        return res.status(200).json({username })
+    })
+    .catch(err => {
+        if(err.code == 11000){
+            return res.status(408).json({error : "username is already taken "})
+        }
+        return res.status(500).json({error : err.message})
+    })
+
+})
+
 
 
 server.post('/create-blog', verifyJWT ,(req,res) => {
@@ -747,6 +808,81 @@ server.post("/delete-comment", verifyJWT ,(req,res) => {
             return res.status(402).json({error : "you cann not delete this ccommetn"})
         }
     })
+})
+
+server.get("/new-notification" , verifyJWT , (req,res) => {
+    let user_id = req.user 
+
+    Notification.exists({ notification_for : user_id ,seen : false , user: { $ne : user_id }})
+    .then(result => {
+        if(result){
+            return res.status(200).json({new_notification_available : true})
+        }
+        else {
+            return res.status(200).json({new_notification_available : false})
+        }
+    })
+    .catch(err => {
+        console.log(err.message);
+        return res.status(500).json({error : err.message})
+    })
+})
+
+server.post("/notifications" , verifyJWT , (req,res) => {
+    let user_id = req.user
+    let { page , filter , deletedDocCount } = req.body
+
+    let maxLimit = 10;
+    let findQuery = { notification_for : user_id , user:{$ne : user_id} }
+
+    let skipDocs = (page - 1) * maxLimit;
+
+    if(filter != 'all'){
+        findQuery.type = filter
+    }
+    if(deletedDocCount){
+        skipDocs -= deletedDocCount;
+    }
+
+    Notification.find(findQuery)
+    .skip(skipDocs)
+    .limit(maxLimit)
+    .populate("blog" , "title blog_id" )
+    .populate("user" , "personal_info.fullname perosnal_info.username personal_info.profile_img")
+    .populate("comment" , "comment")
+    .populate("replied_on_comment" , "comment")
+    .populate("reply" , "comment")
+    .sort({ createdAt: -1 })
+    .select("createdAt type seen reply")
+    .then(notifications => {
+        return res.status(200).json({notifications})
+    })
+    .catch(err => {
+        console.log(err.message)
+        return res.status(500).json({error : err.message})
+    })
+
+})
+
+
+server.post("/all-notifications-count" ,verifyJWT ,  (req,res) => {
+    let user_id = req.user;
+    let { filter } = req.body;
+
+    let findQuery = {notification_for : user_id , user : {$ne : user_id}}
+
+    if(filter != 'all'){
+        findQuery.type = filter
+    }
+
+    Notification.countDocuments(findQuery)
+    .then(count => {
+        return res.status(200).json({totalDocs : count})
+    })
+    .catch(err => {
+        return res.status(500).json({error : err.message})
+    })
+
 })
 
 server.listen(PORT, () => {
